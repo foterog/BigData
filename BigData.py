@@ -66,7 +66,7 @@ with col4:
     st.write("**Conteo de estados:**")
     # AQUÍ ESTABA EL ERROR: Ahora verificamos antes de ejecutar
     if 'state' in df_filtered.columns:
-        st.write(df_filtered['state'].value_counts())
+        st.write(df_filtered['estado'].value_counts())
     else:
         st.warning("Columna 'state' no encontrada")
 
