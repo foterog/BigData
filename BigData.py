@@ -58,7 +58,7 @@ if file:
 
     with col4:
         st.write("**Conteo de estados:**")
-        st.write(df_filtered['state'].value_counts())
+        st.write(df_filtered['State'].value_counts())
 
     # --- 3. VISUALIZACIONES ---
     st.header("3. Visualizaciones")
