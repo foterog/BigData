@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Dashboard IoT", layout="wide")
 
 # Título (Requisito de imagen 1)
-st.title("📊 Dashboard IoT Industrial")
+st.title("📊 BigData Dashboard")
 
 # --- CARGA DE DATOS ---
 file = st.file_uploader("Sube tu archivo CSV", type=['csv'])
