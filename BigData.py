@@ -40,69 +40,52 @@ if file:
         df_filtered = df_filtered[(df_filtered['timestamp'].dt.date >= start) & 
                                   (df_filtered['timestamp'].dt.date <= end)]
 
-    # --- 2. ESTADÍSTICAS BÁSICAS ---
-    st.header("2. Estadísticas básicas (Analítica Descriptiva)")
-    col1, col2, col3, col4 = st.columns(4)
+   # --- 2. ESTADÍSTICAS BÁSICAS ---
+st.header("2. Estadísticas básicas (Analítica Descriptiva)")
+col1, col2, col3, col4 = st.columns(4)
 
-    with col1:
-        avg_temp = df_filtered['temperature'].mean()
-        st.metric("Promedio Temperatura", f"{avg_temp:.2f} °C")
+# Función auxiliar para evitar repetir código de error
+def get_col_val(df, col_name, method="mean"):
+    if col_name in df.columns:
+        return df[col_name].mean() if method == "mean" else df[col_name].max()
+    return None
 
-    with col2:
-        avg_energy = df_filtered['energy_consumption'].mean()
-        st.metric("Promedio Consumo", f"{avg_energy:.2f} kWh")
+with col1:
+    val = get_col_val(df_filtered, 'temperature')
+    st.metric("Promedio Temperatura", f"{val:.2f} °C" if val is not None else "N/A")
 
-    with col3:
-        max_vib = df_filtered['vibration'].max()
-        st.metric("Máximo Vibración", f"{max_vib:.2f}")
+with col2:
+    val = get_col_val(df_filtered, 'energy_consumption')
+    st.metric("Promedio Consumo", f"{val:.2f} kWh" if val is not None else "N/A")
 
-    with col4:
-        st.write("**Conteo de estados:**")
-        st.write(df_filtered['State'].value_counts())
+with col3:
+    val = get_col_val(df_filtered, 'vibration', "max")
+    st.metric("Máximo Vibración", f"{val:.2f}" if val is not None else "N/A")
 
-    # --- 3. VISUALIZACIONES ---
-    st.header("3. Visualizaciones")
-
-    # A. Serie de tiempo (Temperatura vs Tiempo)
-    st.subheader("📈 Serie de tiempo: Temperatura vs tiempo")
-    # Streamlit maneja muy bien las series de tiempo con st.line_chart
-    chart_data = df_filtered.set_index('timestamp')[['temperature']]
-    st.line_chart(chart_data)
-
-    col_a, col_b = st.columns(2)
-
-    with col_a:
-        # B. Distribución (Histograma de consumo)
-        st.subheader("📊 Histograma de consumo")
-        fig, ax = plt.subplots()
-        ax.hist(df_filtered['energy_consumption'], bins=20, color='skyblue', edgecolor='black')
-        ax.set_xlabel("Consumo energético")
-        ax.set_ylabel("Frecuencia")
-        st.pyplot(fig)
-
-    with col_b:
-        # C. Relación (Temperatura vs Consumo)
-        st.subheader("🔍 Temperatura vs Consumo")
-        fig2, ax2 = plt.subplots()
-        ax2.scatter(df_filtered['temperature'], df_filtered['energy_consumption'], alpha=0.5, color='green')
-        ax2.set_xlabel("Temperatura")
-        ax2.set_ylabel("Consumo")
-        st.pyplot(fig2)
-
-    # --- 5. SECCIÓN DE INSIGHTS ---
-    st.header("5. Sección de insights (interpretación)")
-    
-    # Lógica de advertencia de temperatura
-    if avg_temp > 30:
-        st.warning(f"⚠️ Advertencia: La temperatura promedio es de {avg_temp:.2f}°C (Superior a 30).")
+with col4:
+    st.write("**Conteo de estados:**")
+    # AQUÍ ESTABA EL ERROR: Ahora verificamos antes de ejecutar
+    if 'state' in df_filtered.columns:
+        st.write(df_filtered['state'].value_counts())
     else:
-        st.success("✅ Temperatura promedio bajo control.")
+        st.warning("Columna 'state' no encontrada")
 
-    # Lógica de alerta por fallos
+# ... (Sección de gráficas igual a la anterior) ...
+
+# --- 5. SECCIÓN DE INSIGHTS ---
+st.header("5. Sección de insights (interpretación)")
+
+if 'temperature' in df_filtered.columns:
+    avg_temp = df_filtered['temperature'].mean()
+    if avg_temp > 30:
+        st.warning(f"⚠️ Advertencia: Temperatura promedio de {avg_temp:.2f}°C (Superior a 30).")
+    else:
+        st.success("✅ Temperatura bajo control.")
+
+if 'state' in df_filtered.columns:
     if 'FAIL' in df_filtered['state'].values:
         st.error("🚨 Alerta: Se detectaron registros en estado FAIL.")
     else:
-        st.info("ℹ️ No hay registros de fallos en el periodo seleccionado.")
-
+        st.info("ℹ️ No hay registros de fallos.")
 else:
-    st.info("Por favor, sube el archivo CSV para comenzar.")
+    st.info("No se pueden generar insights de estado (columna ausente).")
